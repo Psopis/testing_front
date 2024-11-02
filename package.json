@@ -1,7 +1,7 @@
 {
   "name": "my-app",
   "version": "0.1.0",
-
+  "homepage": "https://psopis.github.io/front",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.13.3",
@@ -26,7 +26,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "deploy": "npm run start"
+    "deploy": "npm run start && gh-pages -d src"
   },
   "eslintConfig": {
     "extends": [
