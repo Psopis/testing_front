@@ -7,20 +7,26 @@ const exchanges = [
     {
         id: 'fl.ru',
         name: 'Fl',
-        logo: 'FL',
+        logo: '/front/imges/fl.jpg',
         color: 'bg-blue-500'
     },
     {
         id: 'kwork',
         name: 'Kwork',
-        logo: 'KW',
+        logo: '/front/imges/kwork.jpg',
         color: 'bg-green-500'
     },
     {
         id: 'freelance.habr.com',
-        name: 'HABR',
-        logo: 'HB',
+        name: 'Habr',
+        logo: '/front/imges/habr.jpg',
         color: 'bg-purple-500'
+    },
+    {
+        id: 'freelance_ru',
+        name: 'Freelance',
+        logo: '/front/imges/freelance.jpg',
+        color: 'bg-red-500'
     }
 ];
 

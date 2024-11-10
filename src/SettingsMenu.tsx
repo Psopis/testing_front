@@ -1,6 +1,7 @@
 import React, {useState, useEffect, useRef} from 'react';
 import Switch from '@mui/material/Switch';
 import {ChevronLeft, ChevronDown, ChevronUp, X} from 'lucide-react';
+import './App.css';
 
 
 interface Exchange {
@@ -26,7 +27,7 @@ interface SettingsMenuProps {
 const tg = window.Telegram.WebApp;
 
 
-const baseurl = "https://023a-85-143-145-216.ngrok-free.app"
+const baseurl = "https://c17f-85-143-145-216.ngrok-free.app"
 const url_categories = baseurl + "/api/projects/categories/"
 
 
@@ -34,7 +35,6 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
     const [categoriesByExchange, setCategoriesByExchange] = useState<Record<string, Category[]>>({});
     const [activeExchanges, setActiveExchanges] = useState<Record<string, boolean>>({});
     const [selectedExchange, setSelectedExchange] = useState<Exchange | null>(null);
-
     const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
     const [keywords, setKeywords] = useState<string[]>([]);
     const [keywordInput, setKeywordInput] = useState('');
@@ -45,34 +45,75 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
     const [userCategories, setUserCategories] = useState<number[]>([]);
     const [combinedCategories, setCombinedCategories] = useState<number[]>([]);
     const [userNickname, setUserNickname] = useState<string | null>(null);
-    const [userIfd, setUserId] = useState<number>();
+    const [userId, setUserId] = useState<number>();
+    const [loading, setLoading] = useState(true);
+    const [isInterfaceAvailable, setIsInterfaceAvailable] = useState(true);
+
     const intervalRef = useRef<NodeJS.Timeout | null>(null); // Ref to hold the interval ID
     const timeoutRef = useRef<NodeJS.Timeout | null>(null); // Re
+    const typingTimer = useRef<NodeJS.Timeout | null>(null);
+
+
     useEffect(() => {
+        const readyTimeout = setTimeout(() => {
+            if (userId) {
+                fetchCategories();
+                fetchUserData();
+            }
+        }, 500);
+
         if (tg) {
             tg.ready();
-
 
             if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
                 const user = tg.initDataUnsafe.user;
                 setUserNickname(user.first_name || null);
-                setUserId(1337)
+                setUserId(user.id);
             }
         }
-        fetchCategories();
-        fetchUserData();
-
-        return () => {
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current); // Clear interval on unmount
-            }
-            if (timeoutRef.current) {
-                clearTimeout(timeoutRef.current); // Clear timeout on unmount
+       const handleScroll = (e:UIEvent) => {
+            if (!isInterfaceAvailable) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
             }
         };
-    }, []);
-    const userId = 1337
 
+        if (!isInterfaceAvailable) {
+            // Блокируем скролл на body
+            document.body.style.overflow = 'hidden';
+            document.body.style.height = '100vh';
+            document.body.style.touchAction = 'none';
+            // Добавляем обработчики для предотвращения скролла
+            document.addEventListener('wheel', handleScroll, { passive: false });
+            document.addEventListener('touchmove', handleScroll, { passive: false });
+        } else {
+            // Возвращаем скролл
+            document.body.style.overflow = '';
+            document.body.style.height = '';
+            document.body.style.touchAction = '';
+        }
+
+        // Очистка при размонтировании
+        return () => {
+            document.body.style.overflow = '';
+            document.body.style.height = '';
+            document.body.style.touchAction = '';
+            document.removeEventListener('wheel', handleScroll);
+            document.removeEventListener('touchmove', handleScroll);
+        };
+        return () => {
+            clearTimeout(readyTimeout);
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current); // Очистка интервала при размонтировании
+            }
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current); // Очистка таймера при размонтировании
+            }
+        };
+    }, [userId, isInterfaceAvailable]);
+    // const userId = 7544895563
+    const url_words = baseurl + "/api/users/settings/" + userId?.toString() + '/'
     const url_user_data = baseurl + "/api/users/project_settings/" + userId?.toString() + '/'
     const fetchCategories = async () => {
         try {
@@ -113,20 +154,63 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
             setExcludeWords(data.stopwords || []); // Initialize stopwords
             setKeywords(data.keywords || []);
             setBudget(data.minimal_budget || []);
-            setSendByAgreement(data.negotiable_budget || []);
-            console.log(data.negotiable_budget)
+            setSendByAgreement(!(data.negotiable_budget));
+            setIsInterfaceAvailable(data.has_active_subscription)
             setExcludeWords(data.stopwords || [])
             setKeywords(data.keywords || [])
 
             console.log("User Categories:", data.freelance_exchanges); // Вывод категорий пользователя в консоль
         } catch (error) {
             console.error('Ошибка при получении данных:', error);
+        } finally {
+            setLoading(false); // Update loading state after data is fetched
         }
     };
-    const sendingData = async (payload: {}) => {
+    if (loading) {
+        return <div>.</div>; // Loading indicator
+
+    }
+    const DisabledOverlay = () => (
+        <div
+            className="fixed inset-0 flex items-center justify-center overflow-hidden"
+            style={{
+                position: 'fixed',
+                top: -40,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                minHeight: '90vh',
+                backgroundColor: 'rgb(185,185,185)',
+                zIndex: 9999,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backdropFilter: 'blur(55%)',
+                // Предотвращает скролл внутри оверлея
+            }}
+            onClick={(e) => e.preventDefault()} // Предотвращает всплытие событий
+        >
+            <div
+                className="bg-white p-8 rounded-lg shadow-xl max-w-md mx-auto text-center"
+                style={{
+                    width: '90%',
+                    maxWidth: '400px'
+                }}
+                onClick={(e) => e.stopPropagation()} // Предотвращает всплытие событий
+            >
+                <h2 className="text-xl font-bold mb-4">Интерфейс недоступен</h2>
+                <p className="text-gray-600">
+                    В данный момент интерфейс недоступен. Пожалуйста, попробуйте позже.
+                </p>
+            </div>
+        </div>
+    );
+
+
+    const sendingData = async (payload: {}, url: string) => {
         console.log("Отправляемые данные:", payload);
         try {
-            const response = await fetch(url_user_data, {
+            const response = await fetch(url, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -146,12 +230,10 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
     }
 
 
-
-
     // Указываем тип параметра exchange
     const toggleExchange = async (exchange: Exchange) => {
 
-        await fetchUserData();
+
         // Загрузка данных пользователя при выборе обмена
         const newStatus = !activeExchanges[exchange.id];
         const newActiveExchanges = {
@@ -168,7 +250,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
 
             freelance_exchanges: activeExchangesList,
         };
-        sendingData(payload)
+        sendingData(payload, url_user_data)
 
 
     };
@@ -186,112 +268,165 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
     };
 
 
-    const handleKeywordInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Таймер для отложенной отправки данных на сервер
+    // Таймер для отложенной отправки данных на сервер
+
+
+    // Функция для отправки данных на сервер
+    const triggerServerUpdate = () => {
+        console.log("Отправляем данные на сервер...");
+
+        const payload = {
+            user: userId,
+            stopwords: excludeWords.length > 0 ? excludeWords : [], // Заменяем на "default" если массив пуст
+            keywords: keywords.length > 0 ? keywords : [], // Заменяем на "default" если массив пуст
+        };
+
+        sendingData(payload, url_words); // Ваш метод отправки данных
+    };
+
+    // Сбрасывание таймера и установка нового
+    const resetTypingTimer = () => {
+        if (typingTimer.current) {
+            clearTimeout(typingTimer.current); // Очищаем старый таймер
+        }
+
+        // Устанавливаем новый таймер на 4 секунды
+        typingTimer.current = setTimeout(() => {
+            triggerServerUpdate(); // Отправляем данные на сервер
+        }, 1000);
+    };
+
+
+    // Добавление ключевого слова
+    const handleAddKeyword = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter' && keywordInput.trim()) {
-            setKeywords(prev => [...prev, keywordInput.trim()]);
-            setKeywordInput('');
-            startSendingData();
+            setKeywords((prev) => [...prev, keywordInput.trim()]); // Корректно обновляем состояние
+            setKeywordInput(''); // Очищаем поле ввода
         }
     };
 
-    const handleExcludeWordInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Добавление исключаемого слова
+    const handleAddExcludeWord = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter' && excludeWordInput.trim()) {
-            setExcludeWords(prev => [...prev, excludeWordInput.trim()]);
-            setExcludeWordInput('');
-            startSendingData();
+            setExcludeWords((prev) => [...prev, excludeWordInput.trim()]); // Корректно обновляем состояние
+            setExcludeWordInput(''); // Очищаем поле ввода
         }
     };
-    const startSendingData = () => {
-        // Clear any existing interval and timeout
-        if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-        }
-        if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current);
-        }
 
-        // Start sending data every 3 seconds
-        console.log('Start sending')
-        intervalRef.current = setInterval(() => {
-            console.log('send')
-            const payload = {
-                stopwords: ['asdf', 'asdfqwe'],
-            };
-            sendingData(payload); // Send current stopwords and keywords to the server
-        }, 3000);
-
-        // Set timeout to stop the interval after 5 seconds of inactivity
-        timeoutRef.current = setTimeout(() => {
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current); // Stop sending data
-                intervalRef.current = null; // Clear the reference
-            }
-        }, 5000);
+    // Удаление ключевого слова
+    const deleteKeyword = (word: string) => {
+        setKeywords((prev) => {
+            const updatedKeywords = prev.filter(keyword => keyword !== word);
+            return updatedKeywords;
+        });
+        resetTypingTimer(); // Обновляем таймер после удаления
     };
 
+// Удаление исключаемого слова
+    const deleteExcludeWord = (word: string) => {
+        setExcludeWords((prev) => {
+            const updatedExcludeWords = prev.filter(excludeWord => excludeWord !== word);
+            return updatedExcludeWords;
+        });
+        resetTypingTimer(); // Обновляем таймер после удаления
+    };
     const renderTagInput = (
         title: string,
         tags: string[],
         setTags: React.Dispatch<React.SetStateAction<string[]>>,
         inputValue: string,
         setInputValue: React.Dispatch<React.SetStateAction<string>>,
-        onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void
-    ) => (
-        <div>
-            <h3 className="text-lg font-medium mb-2">{title}</h3>
-            <div className="flex flex-wrap gap-2 mb-2">
-                {tags.map((tag, index) => (
-                    <span
-                        key={index}
-                        className="px-2 py-1 bg-gray-200 rounded-full flex items-center gap-1"
-                    >
-            {tag}
-                        <X
-                            className="w-4 h-4 cursor-pointer hover:text-red-500"
-                            onClick={() => setTags(prev => prev.filter((_, i) => i !== index))}
-                        />
-          </span>
-                ))}
-            </div>
-            <input
-                type="text"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyDown={onKeyDown}
-                className="w-full p-2 border rounded"
-                placeholder="Нажмите Enter для добавления"
-            />
-        </div>
-    );
-
-    const renderExchangesList = () => (
-        <div>
-            <h3 className="text-lg font-medium mb-2">Биржи</h3>
-            <ul className="space-y-2">
-                {exchanges.map(exchange => (
-                    <li key={exchange.id} className="flex items-center justify-between rounded-lg overflow-hidden">
-                        <div
-                            className={`flex items-center flex-grow cursor-pointer p-2 rounded-lg transition-colors duration-200 hover:bg-green-100
-                ${activeExchanges[exchange.id] ? '' : 'opacity-50 cursor-not-allowed'}
-                ${selectedExchange?.id === exchange.id ? 'bg-green-100' : ''}`}
-                            onClick={() => selectExchange(exchange)}
+        onAddTag: (e: React.KeyboardEvent<HTMLInputElement>) => void,
+        onDeleteTag: (tag: string) => void
+    ) => {
+        return (
+            <div>
+                <h3 className="text-lg font-medium mb-2">{title}</h3>
+                {/* Tag Display Area */}
+                <div className="flex flex-wrap gap-2 mb-2">
+                    {tags.map((tag, index) => (
+                        <span
+                            key={index}
+                            className="px-2 py-1 bg-gray-200 rounded-full flex items-center gap-1"
                         >
-              <span className={`w-8 h-8 flex items-center justify-center ${exchange.color} text-white rounded-md mr-2`}>
-                {exchange.logo}
-              </span>
-                            <span className="flex-grow">{exchange.name}</span>
-                            <div onClick={e => e.stopPropagation()}>
-                                <Switch
-                                    checked={activeExchanges[exchange.id] || false}
-                                    onChange={() => toggleExchange(exchange)}
-                                />
-                            </div>
-                        </div>
-                    </li>
-                ))}
-            </ul>
-        </div>
-    );
+                        {tag}
+                            {/* Remove Tag Button */}
+                            <X
+                                className="w-4 h-4 cursor-pointer hover:text-red-500"
+                                onClick={() => {
+
+                                    onDeleteTag(tag)
+                                }
+                                }
+                            />
+                    </span>
+                    ))}
+                </div>
+                {/* Tag Input Area */}
+                <input
+                    type="text"
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyDown={onAddTag}
+                    className="w-full p-2 border rounded"
+                    placeholder="Нажмите Enter для добавления"
+                />
+            </div>
+        );
+    };
+
+    const renderExchangesList = () => {
+
+
+        return (
+            <div>
+                <h3 className="text-lg font-medium mb-2">Биржи</h3>
+                <ul className="space-y-2">
+                    {exchanges.map(exchange => {
+                        // Логируем путь к изображению, чтобы убедиться, что оно корректное
+
+
+                        return (
+                            <li key={exchange.id}
+                                className="flex items-center justify-between rounded-lg overflow-hidden">
+                                <div
+                                    className={`flex items-center flex-grow cursor-pointer p-2 rounded-lg transition-colors duration-200 hover:bg-green-100
+                    ${activeExchanges[exchange.id] ? '' : 'opacity-50 cursor-not-allowed'}
+                    ${selectedExchange?.id === exchange.id ? 'bg-green-100' : ''}`}
+                                    onClick={() => {
+
+                                        selectExchange(exchange);
+                                        fetchCategories()
+                                    }}
+                                >
+                                    <img
+                                        src={exchange.logo}  // Используем путь как есть, без baseurl
+                                        alt={`${exchange.name} logo`}
+                                        className="w-8 h-8 rounded-md mr-2"
+                                    />
+                                    <span className="flex-grow">{exchange.name}</span>
+                                    <div onClick={e => {
+                                        e.stopPropagation(); // Останавливаем всплытие события
+
+                                    }}>
+                                        <Switch
+                                            checked={activeExchanges[exchange.id] || false}
+                                            onChange={() => {
+
+                                                toggleExchange(exchange);
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                            </li>
+                        );
+                    })}
+                </ul>
+            </div>
+        );
+    };
+
 
     const applySelectedCategories = () => {
         const combined = [
@@ -312,16 +447,13 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
 
             categories: categories,
         };
-        sendingData(payload);// Сбрасываем выбранные категории
+        sendingData(payload, url_user_data);// Сбрасываем выбранные категории
         setSelectedExchange(null); // Возвращаемся к выбору биржи
     };
 
     const handleCheckboxChange = (subcategoryId: string, categoryName: string) => {
-
-
         const id = Number(subcategoryId);
         if (id === -1) {
-
             // Все подкатегории для выбранной категории
             const allSubcategories =
                 categoriesByExchange[selectedExchange?.id || '']
@@ -379,15 +511,18 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
         if (!selectedExchange) return null;
 
         const categories = categoriesByExchange[selectedExchange.id] || [];
-
+        console.log('categories')
+        console.log(categories)
+        console.log(selectedExchange.id)
         return (
             <div className="p-6 max-w-md mx-auto bg-white rounded-xl shadow-md space-y-6">
                 <div className="flex items-center mb-4">
                     <ChevronLeft className="cursor-pointer hover:text-green-500" onClick={applySelectedCategories}/>
-                    <span
-                        className={`w-8 h-8 flex items-center justify-center ${selectedExchange.color} text-white rounded-md mx-2`}>
-                {selectedExchange.logo}
-            </span>
+                    <img
+                        src={selectedExchange.logo}  // Используем путь как есть, без baseurl
+                        alt={`${selectedExchange.name} logo`}
+                        className="w-8 h-8 rounded-md mr-2"
+                    />
                     <span>{selectedExchange.name}</span>
                 </div>
                 <h2 className="text-xl font-semibold">Выбери категории</h2>
@@ -403,15 +538,16 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
                             </div>
                             {expandedCategories[category.name] && (
                                 <ul className="pl-4 pb-2 space-y-2">
-                                    <li className="flex items-center p-2 hover:bg-green-100 rounded-lg" onClick={() => {
-                                        const id_sub = -1;
-                                        handleCheckboxChange(id_sub.toString(), category.name);
+                                    <li className="flex items-center p-2 hover:bg-green-100 rounded-lg"
+                                        onClick={() => {
+                                            const id_sub = -1;
+                                            handleCheckboxChange(id_sub.toString(), category.name);
 
-                                    }}>
+                                        }}>
                                         <div className="flex items-center space-x-3 w-full">
                                             <input
                                                 type="checkbox"
-                                                className="w-5 h-5 cursor-pointer"
+                                                className="w-5 h-5 cursor-pointer accent-color:#3a9f21"
                                                 checked={
                                                     category.subcategories.every(sub =>
                                                         combinedCategories.includes(Number(sub.id)) ||
@@ -433,7 +569,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
                                     {/* Render each subcategory */}
                                     {category.subcategories.map(subcategory => (
                                         <li key={subcategory.id}
-                                            className="flex items-center p-2 hover:bg-green-100 rounded-lg cursor-pointer"
+                                            className="flex items-center p-2 hover:bg-green-100 rounded-lg cursor-pointer "
                                             onClick={() => {
                                                 const id_sub = subcategory.id;
                                                 handleCheckboxChange(id_sub.toString(), category.name);
@@ -442,7 +578,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
                                             <div className="flex items-center space-x-3 w-full">
                                                 <input
                                                     type="checkbox"
-                                                    className="w-5 h-5 cursor-pointer"
+                                                    className="w-5 h-5 cursor-pointer accent-color:#3a9f21"
                                                     checked={combinedCategories.includes(Number(subcategory.id)) || userCategories.includes(Number(subcategory.id))}
                                                     onChange={(e) => {
                                                         e.stopPropagation(); // Prevent triggering the parent's onClick
@@ -477,35 +613,63 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
 
     const renderMainSettings = () => (
         <>
-            {renderTagInput("Ключевые слова", keywords, setKeywords, keywordInput, setKeywordInput, handleKeywordInputKeyDown)}
-            {renderTagInput("Слова-исключения", excludeWords, setExcludeWords, excludeWordInput, setExcludeWordInput, handleExcludeWordInputKeyDown)}
-            <div>
-                <input
-                    type="number"
-                    min="0" // Restricts the input to non-negative numbers
-                    value={budget > 0 ? budget.toString() : ''} // Ensure value is a string, but display empty if budget is non-positive
-                    onChange={e => {
-                        const value = e.target.value;
-                        // Проверяем, является ли значение положительным числом или пустым
-                        if (value.trim() === "") {
-                            setBudget(0); // Устанавливаем 0, если поле пустое
-                        } else {
-                            const parsedValue = Number(value); // Преобразуем строку в число
-                            if (!isNaN(parsedValue) && parsedValue >= 0) { // Проверяем на NaN и положительность
-                                setBudget(parsedValue);
-                                const payload = {
-                                    minimal_budget: parsedValue,
-                                };
-                                sendingData(payload)
-                                // Устанавливаем только если это положительное число
-                            }
-                        }
+            {renderTagInput(
+                "Ключевые слова",         // title
+                keywords,                 // tags array
+                setKeywords,              // setTags function
+                keywordInput,             // inputValue
+                setKeywordInput,          // setInputValue function
+                handleAddKeyword,      // onAddTag function for adding a tag
+                deleteKeyword
+            )}
 
-                    }}
-                    className="w-full p-1.5 border rounded"
-                    placeholder="Введите бюджет"
-                    style={{height: '40px', resize: 'none'}} // Ограничение по высоте
-                />
+            {renderTagInput(
+                "Исключенные слова",      // title
+                excludeWords,             // tags array
+                setExcludeWords,          // setTags function
+                excludeWordInput,         // inputValue
+                setExcludeWordInput,      // setInputValue function
+                handleAddExcludeWord,
+                deleteExcludeWord
+                // onAddTag function for adding an excluded word
+            )}
+
+            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start'}}>
+                <label className="text-lg font-medium mb-2"
+                       style={{marginBottom: '5px', fontSize: '16px'}}>Бюджет</label>
+                <div style={{display: 'flex', alignItems: 'center'}}>
+                    <input
+                        type="number"
+                        min="0"
+                        value={budget > 0 ? budget.toString() : ''}
+                        onChange={e => {
+                            const value = e.target.value;
+                            if (value.trim() === "") {
+                                setBudget(0); // Устанавливаем 0, если поле пустое
+                            } else {
+                                const parsedValue = Number(value);
+                                if (!isNaN(parsedValue) && parsedValue >= 0) {
+                                    setBudget(parsedValue);
+                                }
+                            }
+                        }}
+                        onBlur={() => {
+                            const payload = {
+                                minimal_budget: budget,
+                            };
+                            sendingData(payload, url_user_data);
+                        }}
+                        className="p-1.5 border rounded"
+                        placeholder="Введите бюджет"
+                        style={{
+                            height: '40px',
+                            width: '150px', // Уменьшаем ширину инпута
+                            resize: 'none',
+                            marginRight: '5px', // Отступ между инпутом и символом рубля
+                        }}
+                    />
+                    <span style={{fontSize: '16px'}}>₽</span> {/* Символ рубля */}
+                </div>
             </div>
             <div className="flex items-center">
                 <Switch
@@ -513,12 +677,12 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
                     onChange={() => {
 
                         const newAgreement = !sendByAgreement; // Toggle the state
-                         console.log("Toggling sendByAgreement to:", newAgreement);
+                        console.log("Toggling sendByAgreement to:", newAgreement);
                         setSendByAgreement(newAgreement); // Update local state
                         const payload = {
                             negotiable_budget: !newAgreement,
                         };
-                        sendingData(payload); // Send the new state to the server
+                        sendingData(payload, url_user_data); // Send the new state to the server
                         // console.log("sendByAgreement:", sendByAgreement, "Type:", typeof sendByAgreement);
                     }}
                 />
@@ -528,7 +692,11 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
     );
 
     return (
+
+
+
         <div className="p-6 max-w-md mx-auto bg-white rounded-xl shadow-md space-y-6">
+            {!isInterfaceAvailable && <DisabledOverlay/>}
             {selectedExchange ? renderCategoriesList() : (
                 <>
                     <div>
@@ -539,6 +707,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
                     {renderMainSettings()}
                 </>
             )}
+
         </div>
     );
 };
