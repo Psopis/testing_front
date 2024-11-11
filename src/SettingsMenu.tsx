@@ -650,6 +650,7 @@ if (!isInterfaceAvailable) {
                 <div style={{display: 'flex', alignItems: 'center'}}>
                     <input
                         type="number"
+                        inputMode="numeric"
                         min="0"
                         value={budget > 0 ? budget.toString() : ''}
                         onChange={e => {
@@ -663,6 +664,7 @@ if (!isInterfaceAvailable) {
                                 }
                             }
                         }}
+
                         onBlur={() => {
                             const payload = {
                                 minimal_budget: budget,
