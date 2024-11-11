@@ -1,7 +1,7 @@
 import React from 'react';
 import SettingsMenu from './SettingsMenu'; // Импортируем компонент
 
-import {useEffect, useState} from "react"
+
 
 const exchanges = [
     {
