@@ -3,7 +3,6 @@ import Switch from '@mui/material/Switch';
 import {ChevronLeft, ChevronDown, ChevronUp, X} from 'lucide-react';
 import './App.css';
 
-
 interface Exchange {
     id: string;
     name: string;
@@ -49,6 +48,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
     const [loading, setLoading] = useState(true);
     const [isInterfaceAvailable, setIsInterfaceAvailable] = useState(true);
 
+
     const intervalRef = useRef<NodeJS.Timeout | null>(null); // Ref to hold the interval ID
     const timeoutRef = useRef<NodeJS.Timeout | null>(null); // Re
     const typingTimer = useRef<NodeJS.Timeout | null>(null);
@@ -63,14 +63,20 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
         }, 500);
 
         if (tg) {
-            tg.ready();
+            tg.ready()
+
 
             if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+
                 const user = tg.initDataUnsafe.user;
                 setUserNickname(user.first_name || null);
-                setUserId(user.id);
+                setUserId(user.id)
             }
+
         }
+
+
+
        const handleScroll = (e:UIEvent) => {
             if (!isInterfaceAvailable) {
                 e.preventDefault();
@@ -78,8 +84,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
                 return false;
             }
         };
-
-        if (!isInterfaceAvailable) {
+if (!isInterfaceAvailable) {
             // Блокируем скролл на body
             document.body.style.overflow = 'hidden';
             document.body.style.height = '100vh';
@@ -93,28 +98,25 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
             document.body.style.height = '';
             document.body.style.touchAction = '';
         }
+        return () => {
 
-        // Очистка при размонтировании
-        return () => {
-            document.body.style.overflow = '';
-            document.body.style.height = '';
-            document.body.style.touchAction = '';
-            document.removeEventListener('wheel', handleScroll);
-            document.removeEventListener('touchmove', handleScroll);
-        };
-        return () => {
             clearTimeout(readyTimeout);
             if (intervalRef.current) {
                 clearInterval(intervalRef.current); // Очистка интервала при размонтировании
+                // Clear interval on unmount
             }
             if (timeoutRef.current) {
                 clearTimeout(timeoutRef.current); // Очистка таймера при размонтировании
+                // Clear timeout on unmount
             }
         };
     }, [userId, isInterfaceAvailable]);
+
+
+
+
     // const userId = 7544895563
-    const url_words = baseurl + "/api/users/settings/" + userId?.toString() + '/'
-    const url_user_data = baseurl + "/api/users/project_settings/" + userId?.toString() + '/'
+
     const fetchCategories = async () => {
         try {
             const response = await fetch(url_categories);
@@ -140,6 +142,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
 
     const fetchUserData = async () => {
         try {
+
             const response = await fetch(url_user_data);
             if (!response.ok) {
                 throw new Error('Ошибка при загрузке данных пользователя');
@@ -155,10 +158,10 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
             setKeywords(data.keywords || []);
             setBudget(data.minimal_budget || []);
             setSendByAgreement(!(data.negotiable_budget));
-            setIsInterfaceAvailable(data.has_active_subscription)
+            console.log(data.negotiable_budget)
             setExcludeWords(data.stopwords || [])
             setKeywords(data.keywords || [])
-
+            setIsInterfaceAvailable(data.has_active_subscription)
             console.log("User Categories:", data.freelance_exchanges); // Вывод категорий пользователя в консоль
         } catch (error) {
             console.error('Ошибка при получении данных:', error);
@@ -166,10 +169,9 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
             setLoading(false); // Update loading state after data is fetched
         }
     };
-    if (loading) {
-        return <div>.</div>; // Loading indicator
+    const url_words = baseurl + "/api/users/settings/" + userId?.toString() + '/'
+    const url_user_data = baseurl + "/api/users/project_settings/" + userId?.toString() + '/'
 
-    }
     const DisabledOverlay = () => (
         <div
             className="fixed inset-0 flex items-center justify-center overflow-hidden"
@@ -297,6 +299,10 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
         }, 1000);
     };
 
+    // Используем `useEffect` для отслеживания изменений в `keywords` и `excludeWords`
+    useEffect(() => {
+        resetTypingTimer(); // Сбрасываем таймер при каждом изменении ключевых слов или исключений
+    }, [keywords, excludeWords]);
 
     // Добавление ключевого слова
     const handleAddKeyword = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -375,7 +381,10 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
             </div>
         );
     };
+    if (loading) {
+        return <div>.</div>; // Loading indicator
 
+    }
     const renderExchangesList = () => {
 
 
@@ -452,8 +461,11 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
     };
 
     const handleCheckboxChange = (subcategoryId: string, categoryName: string) => {
+
+
         const id = Number(subcategoryId);
         if (id === -1) {
+
             // Все подкатегории для выбранной категории
             const allSubcategories =
                 categoriesByExchange[selectedExchange?.id || '']
@@ -511,9 +523,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
         if (!selectedExchange) return null;
 
         const categories = categoriesByExchange[selectedExchange.id] || [];
-        console.log('categories')
-        console.log(categories)
-        console.log(selectedExchange.id)
+
         return (
             <div className="p-6 max-w-md mx-auto bg-white rounded-xl shadow-md space-y-6">
                 <div className="flex items-center mb-4">
@@ -692,9 +702,6 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
     );
 
     return (
-
-
-
         <div className="p-6 max-w-md mx-auto bg-white rounded-xl shadow-md space-y-6">
             {!isInterfaceAvailable && <DisabledOverlay/>}
             {selectedExchange ? renderCategoriesList() : (
@@ -707,9 +714,9 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
                     {renderMainSettings()}
                 </>
             )}
-
         </div>
     );
+
 };
 
 export {SettingsMenu, tg};
