@@ -55,6 +55,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
 
 
     useEffect(() => {
+        console.log('Трах ракетка')
         const readyTimeout = setTimeout(() => {
             if (userId) {
                 fetchCategories();
