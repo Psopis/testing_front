@@ -409,8 +409,7 @@ if (!isInterfaceAvailable) {
 
                                         selectExchange(exchange);
                                         fetchCategories()
-                                    }}
-                                >
+                                    }}                                >
                                     <img
                                         src={exchange.logo}  // Используем путь как есть, без baseurl
                                         alt={`${exchange.name} logo`}
