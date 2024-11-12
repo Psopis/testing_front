@@ -53,9 +53,9 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
     const timeoutRef = useRef<NodeJS.Timeout | null>(null); // Re
     const typingTimer = useRef<NodeJS.Timeout | null>(null);
 
-
+console.log('Трах ракетка')
     useEffect(() => {
-        console.log('Трах ракетка')
+
         const readyTimeout = setTimeout(() => {
             if (userId) {
                 fetchCategories();
@@ -71,11 +71,11 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
 
                 const user = tg.initDataUnsafe.user;
                 setUserNickname(user.first_name || null);
-                setUserId(user.id)
+
             }
 
         }
-
+setUserId(7544895563)
 
 
        const handleScroll = (e:UIEvent) => {
@@ -383,7 +383,8 @@ if (!isInterfaceAvailable) {
         );
     };
     if (loading) {
-        return <div>ЗАГРУЗКА ПОЛНЫМ ХОДОМ</div>; // Loading indicator
+        console.log('loading')
+        return <div>.</div>; // Loading indicator
 
     }
     const renderExchangesList = () => {
