@@ -382,7 +382,7 @@ if (!isInterfaceAvailable) {
         );
     };
     if (loading) {
-        return <div>.</div>; // Loading indicator
+        return <div>ЗАГРУЗКА ПОЛНЫМ ХОДОМ</div>; // Loading indicator
 
     }
     const renderExchangesList = () => {
