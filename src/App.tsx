@@ -25,7 +25,7 @@ const exchanges = [
     {
         id: 'freelance_ru',
         name: 'Freelance',
-        logo: 'imges/freelance.jpg',
+        logo: '/imges/freelance.jpg',
         color: 'bg-red-500'
     }
 ];
