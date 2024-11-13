@@ -1,7 +1,7 @@
 {
   "name": "my-app",
   "version": "0.1.0",
-  "homepage": "https://orders-hunter.ru",
+  "homepage": "http://127.0.0.1:8000",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.13.3",
