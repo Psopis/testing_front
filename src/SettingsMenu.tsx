@@ -26,7 +26,7 @@ interface SettingsMenuProps {
 const tg = window.Telegram.WebApp;
 
 
-const baseurl = "https://c17f-85-143-145-216.ngrok-free.app"
+const baseurl = "http://90.156.226.89:8000"
 const url_categories = baseurl + "/api/projects/categories/"
 
 
