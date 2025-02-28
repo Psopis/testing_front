@@ -56,3 +56,45 @@ input[type="number"]::-webkit-outer-spin-button {
 input[type="number"] {
     -moz-appearance: textfield; /* Set the appearance to textfield */
 }
+
+
+
+/* Добавим стили для новых элементов */
+.focus\:ring-green-500:focus {
+  ring-width: 2px;
+  ring-color: #3a9f21;
+  outline: none;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.transition-colors {
+  transition: background-color 0.2s ease;
+}
+
+/* Добавить в App.css */
+.text-shadow {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.input-shadow {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* Для полей ввода */
+input, textarea {
+  transition: all 0.2s ease;
+  border: 1px solid #e2e8f0;
+}
+
+input:focus, textarea:focus {
+  box-shadow: 0 0 0 3px rgba(56, 161, 105, 0.1);
+}

@@ -1,4 +1,5 @@
 import React, {useState, useEffect, useRef} from 'react';
+import { useNavigate } from 'react-router-dom';
 import Switch from '@mui/material/Switch';
 import {ChevronLeft, ChevronDown, ChevronUp, X} from 'lucide-react';
 import './App.css';
@@ -26,8 +27,10 @@ interface SettingsMenuProps {
 const tg = window.Telegram.WebApp;
 
 
-const baseurl = "https://c17f-85-143-145-216.ngrok-free.app"
+// const baseurl = "https://c17f-85-143-145-216.ngrok-free.app"
+const baseurl = "https://ordershunter.ru"
 const url_categories = baseurl + "/api/projects/categories/"
+
 
 
 const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
@@ -48,12 +51,12 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
     const [loading, setLoading] = useState(true);
     const [isInterfaceAvailable, setIsInterfaceAvailable] = useState(true);
 
-
+    const navigate = useNavigate(); 
     const intervalRef = useRef<NodeJS.Timeout | null>(null); // Ref to hold the interval ID
     const timeoutRef = useRef<NodeJS.Timeout | null>(null); // Re
     const typingTimer = useRef<NodeJS.Timeout | null>(null);
 
-console.log('Трах ракетка')
+    
     useEffect(() => {
 
         const readyTimeout = setTimeout(() => {
@@ -71,11 +74,11 @@ console.log('Трах ракетка')
 
                 const user = tg.initDataUnsafe.user;
                 setUserNickname(user.first_name || null);
+                setUserId(user.id)
 
             }
 
         }
-setUserId(7544895563)
 
 
        const handleScroll = (e:UIEvent) => {
@@ -348,6 +351,7 @@ if (!isInterfaceAvailable) {
         onDeleteTag: (tag: string) => void
     ) => {
         return (
+            
             <div>
                 <h3 className="text-lg font-medium mb-2">{title}</h3>
                 {/* Tag Display Area */}
@@ -452,6 +456,7 @@ if (!isInterfaceAvailable) {
             .filter(id => id !== null) // Убираем null, если они есть
         // .filter(cat => cat !== "Все специальности");
         // Создаем payload для запроса
+        console.log("Selected Categories:", categories);
         const payload = {
             user: userId, // Замените на нужный user ID
 
@@ -522,9 +527,9 @@ if (!isInterfaceAvailable) {
 
     const renderCategoriesList = () => {
         if (!selectedExchange) return null;
-
+    
         const categories = categoriesByExchange[selectedExchange.id] || [];
-
+    
         return (
             <div className="p-6 max-w-md mx-auto bg-white rounded-xl shadow-md space-y-6">
                 <div className="flex items-center mb-4">
@@ -542,18 +547,33 @@ if (!isInterfaceAvailable) {
                         <li key={category.id} className="border-b">
                             <div
                                 className="flex items-center justify-between py-2 cursor-pointer hover:bg-green-100 rounded-lg px-2"
-                                onClick={() => toggleCategory(category.name)}
+                                onClick={() => {
+                                    if (category.subcategories.length > 0) {
+                                        toggleCategory(category.name);
+                                    }
+                                }}
                             >
                                 <span>{category.name}</span>
-                                {expandedCategories[category.name] ? <ChevronUp/> : <ChevronDown/>}
+                                {category.subcategories.length > 0 ? (
+                                    expandedCategories[category.name] ? <ChevronUp/> : <ChevronDown/>
+                                ) : (
+                                    <input
+                                        type="checkbox"
+                                        className="w-5 h-5 cursor-pointer accent-color:#3a9f21"
+                                        checked={combinedCategories.includes(Number(category.id)) || userCategories.includes(Number(category.id))}
+                                        onChange={(e) => {
+                                            e.stopPropagation(); // Prevent triggering the parent's onClick
+                                            handleCheckboxChange(category.id, category.name);
+                                        }}
+                                    />
+                                )}
                             </div>
-                            {expandedCategories[category.name] && (
+                            {expandedCategories[category.name] && category.subcategories.length > 0 && (
                                 <ul className="pl-4 pb-2 space-y-2">
                                     <li className="flex items-center p-2 hover:bg-green-100 rounded-lg"
                                         onClick={() => {
                                             const id_sub = -1;
                                             handleCheckboxChange(id_sub.toString(), category.name);
-
                                         }}>
                                         <div className="flex items-center space-x-3 w-full">
                                             <input
@@ -568,7 +588,6 @@ if (!isInterfaceAvailable) {
                                                 onChange={e => {
                                                     const id_sub = -1;
                                                     handleCheckboxChange(id_sub.toString(), category.name);
-                                                    // ChooseAllCategories(category.name, "Все специальности")
                                                 }}
                                             />
                                             <label className="text-sm text-gray-600 cursor-pointer flex-grow">
@@ -576,7 +595,7 @@ if (!isInterfaceAvailable) {
                                             </label>
                                         </div>
                                     </li>
-
+    
                                     {/* Render each subcategory */}
                                     {category.subcategories.map(subcategory => (
                                         <li key={subcategory.id}
@@ -618,7 +637,6 @@ if (!isInterfaceAvailable) {
                 </button>
             </div>
         );
-
     };
 
 
@@ -647,7 +665,7 @@ if (!isInterfaceAvailable) {
 
             <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start'}}>
                 <label className="text-lg font-medium mb-2"
-                       style={{marginBottom: '5px', fontSize: '16px'}}>Бюджет</label>
+                       style={{marginBottom: '5px', fontSize: '16px'}}>Минимальная цена</label>
                 <div style={{display: 'flex', alignItems: 'center'}}>
                     <input
                         type="number"
@@ -673,7 +691,7 @@ if (!isInterfaceAvailable) {
                             sendingData(payload, url_user_data);
                         }}
                         className="p-1.5 border rounded"
-                        placeholder="Введите бюджет"
+                        placeholder="Введите цену"
                         style={{
                             height: '40px',
                             width: '150px', // Уменьшаем ширину инпута
@@ -706,13 +724,26 @@ if (!isInterfaceAvailable) {
 
     return (
         <div className="p-6 max-w-md mx-auto bg-white rounded-xl shadow-md space-y-6">
+            
             {!isInterfaceAvailable && <DisabledOverlay/>}
             {selectedExchange ? renderCategoriesList() : (
                 <>
-                    <div>
-                        <h1 className="text-2xl font-bold text-blue-500">Привет, {userNickname}</h1>
-                        <h2 className="text-xl font-semibold">Настрой под себя</h2>
-                    </div>
+                    <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-2xl font-bold text-green-600">Привет, {userNickname}</h1>
+            <h2 className="text-lg font-semibold text-gray-700">Настрой под себя</h2>
+          </div>
+
+          {/* РАЗМЕЩЕНИЕ ЗАКАЗА
+          <button
+            className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 
+              transition-colors shadow-md ml-4"
+            onClick={() => navigate('/new-order')}
+          >
+            Разместить заказ
+          </button>
+          */}
+        </div>
                     {renderExchangesList()}
                     {renderMainSettings()}
                 </>

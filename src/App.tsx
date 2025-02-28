@@ -1,8 +1,7 @@
 import React from 'react';
-import SettingsMenu from './SettingsMenu'; // Импортируем компонент
-
-import {useEffect, useState} from "react"
-
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import SettingsMenu from './SettingsMenu';
+import NewOrderPage from './NewOrderPage';
 const exchanges = [
     {
         id: 'fl.ru',
@@ -23,7 +22,7 @@ const exchanges = [
         color: 'bg-purple-500'
     },
     {
-        id: 'freelance_ru',
+        id: 'freelance.ru',
         name: 'Freelance',
         logo: '/imges/freelance.jpg',
         color: 'bg-red-500'
@@ -32,12 +31,23 @@ const exchanges = [
 
 
 const App = () => {
-
     return (
-        <div>
-
-            <SettingsMenu exchanges={exchanges}/> {/* Передаем свойства */}
-        </div>
+        <Router>
+            <Routes>
+                <Route 
+                    path="/" 
+                    element={
+                        <div>
+                            <SettingsMenu exchanges={exchanges} />
+                        </div>
+                    } 
+                />
+                <Route 
+                    path="/new-order" 
+                    element={<NewOrderPage />} 
+                />
+            </Routes>
+        </Router>
     );
 };
 
