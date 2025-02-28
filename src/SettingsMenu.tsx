@@ -27,7 +27,6 @@ interface SettingsMenuProps {
 const tg = window.Telegram.WebApp;
 
 
-// const baseurl = "https://c17f-85-143-145-216.ngrok-free.app"
 const baseurl = "https://ordershunter.ru"
 const url_categories = baseurl + "/api/projects/categories/"
 
