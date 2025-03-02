@@ -75,11 +75,11 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
                 setUserNickname(user.first_name || null);
                 setUserId(user.id)
 
+
             }
 
         }
-
-
+        
        const handleScroll = (e:UIEvent) => {
             if (!isInterfaceAvailable) {
                 e.preventDefault();

@@ -15,12 +15,12 @@ const exchanges = [
         logo: '/imges/kwork.jpg',
         color: 'bg-green-500'
     },
-    {
-        id: 'freelance.habr.com',
-        name: 'Habr',
-        logo: '/imges/habr.jpg',
-        color: 'bg-purple-500'
-    },
+    // {
+    //     id: 'freelance.habr.com',
+    //     name: 'Habr',
+    //     logo: '/imges/habr.jpg',
+    //     color: 'bg-purple-500'
+    // },
     {
         id: 'freelance.ru',
         name: 'Freelance',
