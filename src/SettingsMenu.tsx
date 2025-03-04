@@ -79,7 +79,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
             }
 
         }
-    
+       // setUserId(7544895563)
        const handleScroll = (e:UIEvent) => {
             if (!isInterfaceAvailable) {
                 e.preventDefault();
@@ -716,7 +716,7 @@ if (!isInterfaceAvailable) {
                         // console.log("sendByAgreement:", sendByAgreement, "Type:", typeof sendByAgreement);
                     }}
                 />
-                <span className="ml-2">Отправлять по соглашению</span>
+                <span className="ml-2">Отправлять с бюджетом по договоренности</span>
             </div>
         </>
     );
