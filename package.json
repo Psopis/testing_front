@@ -29,6 +29,11 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "prebuild": "rm -rf /var/www/build"
+<<<<<<< HEAD
+=======
+
+    
+>>>>>>> 79b99052c7b882a06eb461aface16d052e747990
   },
   "eslintConfig": {
     "extends": [
