@@ -79,7 +79,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
             }
 
         }
-        
+    
        const handleScroll = (e:UIEvent) => {
             if (!isInterfaceAvailable) {
                 e.preventDefault();
