@@ -79,7 +79,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
             }
 
         }
-       // setUserId(7544895563)
+        //setUserId(7544895563)
        const handleScroll = (e:UIEvent) => {
             if (!isInterfaceAvailable) {
                 e.preventDefault();
@@ -541,8 +541,14 @@ if (!isInterfaceAvailable) {
                     <span>{selectedExchange.name}</span>
                 </div>
                 <h2 className="text-xl font-semibold">Выбери категории</h2>
-                <ul className="space-y-2">
-                    {categories.map(category => (
+            <ul className="space-y-2">
+                {categories.map(category => {
+                    // Проверяем, выбрана ли хотя бы одна подкатегория в категории
+                    const hasSelectedSubcategory = category.subcategories.some(subcategory =>
+                        combinedCategories.includes(Number(subcategory.id)) || userCategories.includes(Number(subcategory.id))
+                    );
+
+                    return (
                         <li key={category.id} className="border-b">
                             <div
                                 className="flex items-center justify-between py-2 cursor-pointer hover:bg-green-100 rounded-lg px-2"
@@ -552,7 +558,12 @@ if (!isInterfaceAvailable) {
                                     }
                                 }}
                             >
-                                <span>{category.name}</span>
+                                <div className="flex items-center">
+    <span>{category.name}</span>
+    {hasSelectedSubcategory && (
+        <div className="w-2 h-2 bg-green-500 rounded-full ml-2"></div>
+    )}
+</div>
                                 {category.subcategories.length > 0 ? (
                                     expandedCategories[category.name] ? <ChevronUp/> : <ChevronDown/>
                                 ) : (
@@ -594,7 +605,7 @@ if (!isInterfaceAvailable) {
                                             </label>
                                         </div>
                                     </li>
-    
+
                                     {/* Render each subcategory */}
                                     {category.subcategories.map(subcategory => (
                                         <li key={subcategory.id}
@@ -624,8 +635,9 @@ if (!isInterfaceAvailable) {
                                 </ul>
                             )}
                         </li>
-                    ))}
-                </ul>
+                    );
+                })}
+            </ul>
                 <button
                     className="w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600"
                     onClick={() => {
