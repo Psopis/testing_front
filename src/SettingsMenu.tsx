@@ -60,7 +60,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
 
         const readyTimeout = setTimeout(() => {
             if (userId) {
-                fetchCategories();
+                // fetchCategories();
                 fetchUserData();
             }
         }, 500);
@@ -73,13 +73,13 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
 
                 const user = tg.initDataUnsafe.user;
                 setUserNickname(user.first_name || null);
-                setUserId(user.id)
+                //setUserId(user.id)
 
 
             }
 
         }
-        //setUserId(7544895563)
+        setUserId(7544895563)
        const handleScroll = (e:UIEvent) => {
             if (!isInterfaceAvailable) {
                 e.preventDefault();
@@ -127,7 +127,7 @@ if (!isInterfaceAvailable) {
                 throw new Error('Ошибка при загрузке категорий');
             }
             const data = await response.json();
-
+            // console.log("data -- " + data)
             const formattedCategories: Record<string, Category[]> = {};
             for (const exchangeId in data) {
                 formattedCategories[exchangeId] = data[exchangeId].map((category: any) => ({
