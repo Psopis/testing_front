@@ -73,13 +73,13 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
 
                 const user = tg.initDataUnsafe.user;
                 setUserNickname(user.first_name || null);
-                //setUserId(user.id)
+                setUserId(user.id)
 
 
             }
 
         }
-        setUserId(7544895563)
+        //setUserId(7544895563)
        const handleScroll = (e:UIEvent) => {
             if (!isInterfaceAvailable) {
                 e.preventDefault();
@@ -118,7 +118,7 @@ if (!isInterfaceAvailable) {
 
 
 
-    // const userId = 7544895563
+// const userId = 7544895563
 
     const fetchCategories = async () => {
         try {
