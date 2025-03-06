@@ -60,7 +60,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
 
         const readyTimeout = setTimeout(() => {
             if (userId) {
-                // fetchCategories();
+                fetchCategories();
                 fetchUserData();
             }
         }, 500);
@@ -79,7 +79,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({exchanges}) => {
             }
 
         }
-        //setUserId(7544895563)
+          //setUserId(7642369215)
        const handleScroll = (e:UIEvent) => {
             if (!isInterfaceAvailable) {
                 e.preventDefault();
