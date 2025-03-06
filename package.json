@@ -1,7 +1,7 @@
 {
   "name": "my-app",
   "version": "0.1.0",
-  "homepage": "https://orders-hunter.ru",
+  "homepage": "https://psopis.github.io/testing_front/",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.13.3",
